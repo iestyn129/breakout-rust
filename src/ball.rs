@@ -4,6 +4,7 @@ use crate::collider::Collider;
 use crate::entity::Entity;
 use crate::paddle::Paddle;
 use crate::sound::SoundSystem;
+use crate::world::WorldState;
 
 pub const BALL_RADIUS: f32 = 8.0;
 
@@ -30,13 +31,7 @@ impl Ball {
 		}
 	}
 
-	pub fn update(
-		&mut self,
-		paddle: &Paddle,
-		bricks: &mut Vec<Brick>,
-		score: &mut usize,
-		sound_system: &mut SoundSystem
-	) {
+	pub fn update(&mut self, paddle: &Paddle, bricks: &mut Vec<Brick>, world_state: &mut WorldState) {
 		if !self.is_moving {
 			self.x += paddle.speed;
 			return;
@@ -51,21 +46,21 @@ impl Ball {
 		if collider.is_colliding(&paddle_collider) {
 			self.y += paddle_collider.top() - collider.bottom();
 
-			self.flip_vertical(sound_system);
+			self.flip_vertical(&mut world_state.sound_system);
 			if paddle.speed.abs() > 0.0 && (
 				(paddle.speed.is_sign_positive() && self.dx.is_sign_negative()) ||
 				(paddle.speed.is_sign_negative() && self.dx.is_sign_positive())
 			) {
-				self.flip_horizontal(sound_system);
+				self.flip_horizontal(&mut world_state.sound_system);
 			}
 		}
 
 		bricks.retain(|brick| {
 			let delete: bool = {
 				if collider.is_colliding(&brick.collider()) {
-					self.flip_vertical(sound_system);
-					*score += 100;
-					sound_system.queue_sound(55);
+					self.flip_vertical(&mut world_state.sound_system);
+					world_state.score += 100;
+					&mut world_state.sound_system.queue_sound(55);
 					true
 				} else { false }
 			};
@@ -79,18 +74,18 @@ impl Ball {
 
 		if self.x < left_boundary {
 			self.x = left_boundary;
-			self.flip_horizontal(sound_system);
+			self.flip_horizontal(&mut world_state.sound_system);
 		} else if self.x > right_boundary {
 			self.x = right_boundary;
-			self.flip_horizontal(sound_system);
+			self.flip_horizontal(&mut world_state.sound_system);
 		}
 
 		if self.y < top_boundary {
 			self.y = top_boundary;
-			self.flip_vertical(sound_system);
+			self.flip_vertical(&mut world_state.sound_system);
 		} else if self.y > bottom_boundary {
 			self.y = bottom_boundary;
-			self.flip_vertical(sound_system);
+			self.flip_vertical(&mut world_state.sound_system);
 			panic!("you lost")
 		}
 	}

@@ -39,7 +39,7 @@ async fn main() {
 	for note in 48..=72 {
 		let freq: f32 = 440.0 * 2.0_f32.powf((note as f32 - 69.0) / 12.0);
 		let sound: Sound = generate_square_wave(freq, SOUND_DURATION, SOUND_SAMPLE_RATE).await;
-		world.sound_system.register_sound(note as usize, sound);
+		world.world_state.sound_system.register_sound(note as usize, sound);
 	}
 
 	loop {

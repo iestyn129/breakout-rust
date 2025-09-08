@@ -7,13 +7,12 @@ use crate::paddle::Paddle;
 use crate::sound::SoundSystem;
 
 pub struct World {
-	pub sound_system: SoundSystem,
-	pub score: usize,
+	pub world_state: WorldState,
 	pub paddle: Paddle,
 	pub ball: Ball,
 	pub bricks: Vec<Brick>,
-	debug: Debug,
-	pub started: bool
+	pub started: bool,
+	debug: Debug
 }
 
 impl World {
@@ -45,13 +44,12 @@ impl World {
 		}
 
 		World {
-			sound_system: SoundSystem::new(),
-			score: 0,
+			world_state: WorldState::new(),
 			paddle,
 			ball,
 			bricks,
-			debug: Debug::new(),
-			started: false
+			started: false,
+			debug: Debug::new()
 		}
 	}
 
@@ -67,8 +65,8 @@ impl World {
 
 	pub fn update(&mut self) {
 		self.paddle.update();
-		self.ball.update(&self.paddle, &mut self.bricks, &mut self.score, &mut self.sound_system);
-		self.sound_system.update();
+		self.ball.update(&self.paddle, &mut self.bricks, &mut self.world_state);
+		self.world_state.update();
 
 		if self.bricks.len() <= 0 {
 			self.stop();
@@ -81,10 +79,28 @@ impl World {
 		self.ball.draw();
 		self.bricks.iter().for_each(|brick| brick.draw());
 
-		draw_text_ex(format!("SCORE: {}", self.score).as_str(), 5.0, 20.0, TextParams {
+		draw_text_ex(format!("SCORE: {}", self.world_state.score).as_str(), 5.0, 20.0, TextParams {
 			font_size: 30,
 			color: WHITE,
 			..Default::default()
 		});
+	}
+}
+
+pub struct WorldState {
+	pub sound_system: SoundSystem,
+	pub score: usize
+}
+
+impl WorldState {
+	pub fn new() -> Self {
+		WorldState {
+			sound_system: SoundSystem::new(),
+			score: 0,
+		}
+	}
+
+	pub fn update(&mut self) {
+		self.sound_system.update();
 	}
 }
